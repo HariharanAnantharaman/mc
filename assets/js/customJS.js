@@ -38,19 +38,19 @@ function vibData(update, data,time){
     data: {
       labels: timeY,
       datasets: [{
-        label: 'X',
+        label: 'X in g',
         fill : false,
         data: vibX,
         backgroundColor: "rgba(0, 143, 151, 1)",
         borderColor:"rgba(0, 143, 151, 1)"
       }, {
-        label: 'Y',
+        label: 'Y in g',
         fill : false,
         data: vibY,
         backgroundColor: "rgba(92, 92, 92, 1)",
         borderColor:"rgba(92, 92, 92, 1)"
       },{
-        label: 'Z',
+        label: 'Z in g',
         fill : false,
         data: vibZ,
         backgroundColor: "rgba(235, 60, 60, 1)",
@@ -62,7 +62,7 @@ function vibData(update, data,time){
         yAxes: [{
             ticks: {
                 suggestedMin: 0,
-                suggestedMax: 1.2
+                suggestedMax: 2
             }
         }]
     }
