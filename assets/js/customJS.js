@@ -101,7 +101,7 @@ function tempData(update, data1,time){
       labels: timeY,
       scaleStartValue : 0 ,
       datasets: [{
-        label: 'Temperature',
+        label: 'Temperature (°C)',
         data: temp,
         backgroundColor: "rgba(0, 143, 151, 1)",
         borderColor:"rgba(0, 143, 151, 1)",
@@ -144,7 +144,7 @@ function humidData(update, data2,time){
     data: {
       labels: timeY,
       datasets: [{
-        label: 'Humidity',
+        label: 'Relative Humidity (%)',
         data: humid,
         backgroundColor: "rgba(92, 92, 92, 1)",
         borderColor:"rgba(92, 92, 92, 1)",
@@ -187,7 +187,7 @@ function airData(update, data3,time){
     data: {
       labels: timeY,
       datasets: [{
-        label: 'Air Quality',
+        label: 'Air Quality (PPM)',
         data: air,
         backgroundColor: "rgba(0, 143, 151, 1)",
         borderColor:"rgba(0, 143, 151, 1)",
