@@ -13,7 +13,13 @@
 
     <!-- CSS INCLUDE -->
     <link rel="stylesheet" type="text/css" id="theme" href="css/theme-default.css" />
+	<!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> -->
     <!-- EOF CSS INCLUDE -->
+	<style>
+	  #map {
+        height: 270px;
+      }
+	    </style>
 </head>
 
 <body>
@@ -305,19 +311,22 @@
                         <!-- END VISITORS BLOCK -->
 
                     </div>
-
+					
                     <div class="col-md-4">
                         <div class="panel-heading">
-                            <div class="panel-title-box">
-                                <h3>Devices</h3>
-                                <span>Geo Location</span>
+                            <div class="panel-title-box" >
+                                <h3>Air Quality</h3>
+                                <span>Air Quality in your City</span>
                             </div>
                             <div class="panel panel-default">
                                 <div class="panel-body padding-0">
-                                    <div class="chart-holder" id="dashboard-map-seles" style="height: 270px"></div>
+                                    <div class="chart-holder" id="map" ></div>
+									<div id="map-canvas"></div>
                                 </div>
                             </div>
                         </div>
+						  <!--<div id="map"></div>
+						  <div id="map-canvas"></div>-->
                     </div>
                 </div>
 
@@ -363,7 +372,7 @@
 
     <!-- START SCRIPTS -->
     <!-- START PLUGINS -->
-    <script type="text/javascript" src="js/plugins/jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="js/plugins/jquery/jquery.min.js"></script> 
     <script type="text/javascript" src="js/plugins/jquery/jquery-ui.min.js"></script>
     <script type="text/javascript" src="js/plugins/bootstrap/bootstrap.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.js"></script>
@@ -449,9 +458,248 @@ if (data[1] > 80) {
 
     <script type="text/javascript" src="js/plugins.js"></script>
     <script type="text/javascript" src="js/actions.js"></script>
-
+	
     <!-- END TEMPLATE -->
     <!-- END SCRIPTS -->
+	
+	<!--BEGIN AMBEE INTEGRATION -->
+	<script>
+     
+
+      var map, heatmap;
+
+      function initMap() {
+        //alert("Reloading map");
+        map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 13,
+
+          center: {lat: 12.972442, lng: 77.580643},
+          mapTypeId: 'roadmap'
+        });
+
+        getPoints();
+
+        //  heatmap.set('gradient', 'rgba(0, 0, 255, 1)');
+      //  console.log("In caller metod",getPoints());
+    /*    heatmap = new google.maps.visualization.HeatmapLayer({
+          data: getPoints(),
+          map: map
+        });*/
+      }
+
+      function toggleHeatmap() {
+        heatmap.setMap(heatmap.getMap() ? null : map);
+      }
+
+      function changeGradient() {
+        var gradient = [
+          'rgba(0, 255, 255, 0)',
+          'rgba(0, 255, 255, 1)',
+          'rgba(0, 191, 255, 1)',
+          'rgba(0, 127, 255, 1)',
+          'rgba(0, 63, 255, 1)',
+          'rgba(0, 0, 255, 1)',
+          'rgba(0, 0, 223, 1)',
+          'rgba(0, 0, 191, 1)',
+          'rgba(0, 0, 159, 1)',
+          'rgba(0, 0, 127, 1)',
+          'rgba(63, 0, 91, 1)',
+          'rgba(127, 0, 63, 1)',
+          'rgba(191, 0, 31, 1)',
+          'rgba(255, 0, 0, 1)'
+        ]
+        heatmap.set('gradient', heatmap.get('gradient') ? null : gradient);
+      }
+
+      function changeRadius() {
+        heatmap.set('radius', heatmap.get('radius') ? null : 20);
+      }
+
+      function changeOpacity() {
+        heatmap.set('opacity', heatmap.get('opacity') ? null : 0.2);
+      }
+
+      // Heatmap data: 500 Points
+      function getPoints() {
+        console.log("Reloading map");
+
+        $.ajax({
+          url: 'http://collector.getambee.co/api/fetch-aggregation?lng=-122.419416&lat=37.7749&precision=2&radius=100&days=1',
+          //url: 'http://collector.getambee.co/api/fetch-aggregation?lng=77.580643&lat=12.972442&precision=2&radius=50&days=10',
+          type: 'post',
+          headers: {
+               //If your header name has spaces or any other char not appropriate
+              "Authorization": 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIwLCJlbWFpbCI6ImthcnRoaWtleWFuLnByYWthc2hAdGVjaG9sdXRpb24uY29tIiwiZmlyc3ROYW1lIjoiS2FydGhpa2V5YW4iLCJsYXN0TmFtZSI6IlByYWthc2giLCJpYXQiOjE1MTI0NTQxMzgyMDYsImV4cCI6MTUxMzY2MzczODIwNiwianRpIjoiMjBmOWMwNjAzMGRjMzFmMTU0YTAzNDA2YzIwYTVlNDQifQ==.R15WoyDG/z4+6fXs4tBc44J7i82Nsqw21pnxEh/CZ+OpY52y2f4/pEnxEYgMK6wgvEz+F94EqKLb8jYDerUhWzp4QMhIk1CUMWvntxGJz+Rz2ZvGRlbSjxEKn4OiVZmRiwhYdix+rTuukOkyMG8s7Ne8fzC0Ej6uTzxL3fjIlzmwtewUcnQ0AEBv8T8SQx30YURS1zU9A6s3q7nEUINZh9SJxzcA/IT4jhtJeUAGWgqtgF8LC60mVZHAY2WemOaMuyIB8DvvNXSL7anaWG0vNeArBf05BcJj+j+J9AGQyf+aUc/NU8kNL6L1IeObACjza8zhnMrQXVHdeBC/x+9ms+8i13HfvcWYZtKYxCBFnk97MwjV670wvT4cmQKoBi87Ow=='  //for object property name, use quoted notation shown in second
+          },
+          dataType: 'json',
+          success: function (data) {
+            var mapVals=new Array();
+
+            if(data.data.length ==0 ){
+
+              map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 13,
+
+                center: {lat: 12.972442, lng: 77.580643},
+                mapTypeId: 'roadmap'
+              });
+
+              $.ajax({
+              //  url: 'http://collector.getambee.co/api/fetch-aggregation?lng=-122.419416&lat=37.7749&precision=2&radius=25&days=1',
+                url: 'http://collector.getambee.co/api/fetch-aggregation?lng=77.580643&lat=12.972442&precision=2&radius=50&days=10',
+                type: 'post',
+                headers: {
+                     //If your header name has spaces or any other char not appropriate
+                    "Authorization": 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIwLCJlbWFpbCI6ImthcnRoaWtleWFuLnByYWthc2hAdGVjaG9sdXRpb24uY29tIiwiZmlyc3ROYW1lIjoiS2FydGhpa2V5YW4iLCJsYXN0TmFtZSI6IlByYWthc2giLCJpYXQiOjE1MTI0NTQxMzgyMDYsImV4cCI6MTUxMzY2MzczODIwNiwianRpIjoiMjBmOWMwNjAzMGRjMzFmMTU0YTAzNDA2YzIwYTVlNDQifQ==.R15WoyDG/z4+6fXs4tBc44J7i82Nsqw21pnxEh/CZ+OpY52y2f4/pEnxEYgMK6wgvEz+F94EqKLb8jYDerUhWzp4QMhIk1CUMWvntxGJz+Rz2ZvGRlbSjxEKn4OiVZmRiwhYdix+rTuukOkyMG8s7Ne8fzC0Ej6uTzxL3fjIlzmwtewUcnQ0AEBv8T8SQx30YURS1zU9A6s3q7nEUINZh9SJxzcA/IT4jhtJeUAGWgqtgF8LC60mVZHAY2WemOaMuyIB8DvvNXSL7anaWG0vNeArBf05BcJj+j+J9AGQyf+aUc/NU8kNL6L1IeObACjza8zhnMrQXVHdeBC/x+9ms+8i13HfvcWYZtKYxCBFnk97MwjV670wvT4cmQKoBi87Ow=='  //for object property name, use quoted notation shown in second
+                },
+                dataType: 'json',
+                success: function (data) {
+                  processReturnData(data);
+                }});
+            }else{
+
+              map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 13,
+
+                center: {lat: 37.7749, lng: -122.419416},
+                mapTypeId: 'roadmap'});
+                processReturnData(data);
+            }
+
+            }
+        });
+
+/*
+        return [
+          {location: new google.maps.LatLng(12.972442, 77.580643), weight: 0.5},
+        {location: new google.maps.LatLng(13.0280, 77.5409), weight: 2},
+        {location: new google.maps.LatLng(13.0031, 77.5643), weight: 3},
+        {location: new google.maps.LatLng(12.9179, 77.6245), weight: 4}
+      ];*/
+      }
+      setInterval('getPoints()', 30000);
+
+      function processReturnData(data) {
+        var mapVals=new Array();
+          console.info(data);
+        //  alert(data);
+        //  alert(data.success);
+        //  alert(data.data);
+      //    val returnValues= Array();
+        //  val returnValues=data.data;
+
+            var pm25Map=new Map();
+            var pm10Map=new Map();
+            var pm1Map=new Map();
+            var latLong=new Array();
+          data.data.forEach(function(item, index, array) {
+            //    console.log(item.coordinates[0], index);
+                var lat =item.coordinates[1];
+                var lang =item.coordinates[0];
+                var key=lat+"_"+lang;
+
+                var pm25Array=pm25Map.get(key);
+                if(!pm25Array){
+                  pm25Array=new Array();
+                }
+                pm25Array.push(item.pm25);
+                pm25Map.set(key,pm25Array);
+
+                 pm10Array=pm10Map.get(key);
+                if(!pm10Array){
+                  pm10Array=new Array();
+                }
+                pm10Array.push(item.pm10);
+                pm10Map.set(key,pm10Array);
+
+
+                var pm1Array=pm1Map.get(key);
+                if(!pm1Array){
+                  pm1Array=new Array();
+                }
+                pm1Array.push(item.pm1);
+                pm1Map.set(key,pm1Array);
+
+                if(!latLong.includes(key)){
+                  latLong.push(key);
+                }
+
+            //    console.log('latitude is',lat);
+            //    console.log('longitude is',lang);
+              /*  item.coordinates.forEach(function(coordvalue, index, array) {
+
+                  if(index ==1){
+                    lat=coordvalue;
+                  }else{
+                    lang=coordvalue;
+                  }
+                })*/
+
+                //var obj={location: new google.maps.LatLng(lat, lang), weight: 0.5};
+                //mapVals.push(obj);
+
+              });
+              //console.log(mapVals);
+            //  return mapVals;
+
+               var averagepm25Map=new Map();
+               var averagepm10Map=new Map();
+               var averagepm1Map=new Map();
+
+               pm25Map.forEach(function(value, key) {
+                 var sum = value.reduce(function(a, b) { return a + b; });
+                 var avg = sum / value.length;
+                 averagepm25Map.set(key,avg);
+              });
+              pm10Map.forEach(function(value, key) {
+                var sum = value.reduce(function(a, b) { return a + b; });
+                var avg = sum / value.length;
+                averagepm10Map.set(key,avg);
+             });
+
+             pm1Map.forEach(function(value, key) {
+               var sum = value.reduce(function(a, b) { return a + b; });
+               var avg = sum / value.length;
+               averagepm1Map.set(key,avg);
+            });
+
+            latLong.forEach(function(item, index, array){
+
+                var pm25=averagepm25Map.get(item);
+                var pm10=averagepm10Map.get(item);
+                var pm1=averagepm1Map.get(item);
+                var coordvalues=item.split("_");
+                var weight =1;
+                if(pm1 > 50 && pm10 > 75 && pm25>100 ){
+                    weight=4;
+                }else if( pm1 <50 && (pm10 > 75 && pm25>100)){
+                  weight =3 ;
+                }else if( (pm1 <50 && (pm10 > 75 || pm25>100)) || (pm1 > 50) ) {
+                  weight =2;
+                }
+
+                var obj={location: new google.maps.LatLng(coordvalues[0], coordvalues[1]), weight:weight};
+                mapVals.push(obj);
+
+            });
+
+            heatmap = new google.maps.visualization.HeatmapLayer({
+                    data: mapVals,
+                    map: map
+                  });
+                  heatmap.set('radius',  20);
+                  heatmap.set('opacity',  0.8);
+
+
+        }
+
+
+
+    </script>
+	<script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyADZvM2zIk8So9l_RljbwUh9LSm01CY1SA&libraries=visualization&callback=initMap">
+    </script>
+	<!--BEGIN AMBEE INTEGRATION -->
 </body>
 
 </html>
